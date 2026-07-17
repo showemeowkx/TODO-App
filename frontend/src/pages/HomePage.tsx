@@ -18,9 +18,16 @@ import {
 } from "@tabler/icons-react";
 import { fetchTodos } from "../services/api";
 import { TodoCard } from "../components/TodoCard";
-import type { Todo } from "../types/todo";
+import {
+  SortMethods,
+  TodoFilters,
+  type SortMethod,
+  type Todo,
+  type TodoFilter,
+} from "../types/todo";
 
 const PAGE_LIMIT = 10;
+const SEARCH_DEBOUNCE_MS = 300;
 
 export function HomePage() {
   const [todos, setTodos] = useState<Todo[]>([]);
@@ -30,10 +37,29 @@ export function HomePage() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [filter, setFilter] = useState<TodoFilter | null>(null);
+  const [sortMethod, setSortMethod] = useState<SortMethod | null>(null);
+
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const loadingRef = useRef(false);
 
   const hasMore = todos.length < total;
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      const next = search.trim();
+      setDebouncedSearch((prev) => {
+        if (prev === next) return prev;
+        setPage(1);
+        setTodos([]);
+        return next;
+      });
+    }, SEARCH_DEBOUNCE_MS);
+
+    return () => window.clearTimeout(timer);
+  }, [search]);
 
   useEffect(() => {
     let cancelled = false;
@@ -49,7 +75,13 @@ export function HomePage() {
       }
 
       try {
-        const response = await fetchTodos({ page, limit: PAGE_LIMIT });
+        const response = await fetchTodos({
+          page,
+          limit: PAGE_LIMIT,
+          search: debouncedSearch || undefined,
+          filter: filter ?? undefined,
+          sortMethod: sortMethod ?? undefined,
+        });
         if (cancelled) return;
 
         setTotal(response.metadata.total);
@@ -79,7 +111,7 @@ export function HomePage() {
     return () => {
       cancelled = true;
     };
-  }, [page]);
+  }, [page, debouncedSearch, filter, sortMethod]);
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
@@ -121,19 +153,51 @@ export function HomePage() {
               size="md"
               radius="md"
               aria-label="Search tasks"
+              value={search}
+              onChange={(event) => setSearch(event.currentTarget.value)}
             />
 
             <Group gap="xs" wrap="wrap">
               <Text size="sm" c="dimmed" mr={4}>
                 Status
               </Text>
-              <Button variant="light" color="gray" radius="md" type="button">
+              <Button
+                variant={filter === null ? "filled" : "light"}
+                color={filter === null ? "teal" : "gray"}
+                radius="md"
+                type="button"
+                onClick={() => {
+                  setFilter(null);
+                  setPage(1);
+                  setTodos([]);
+                }}
+              >
                 All
               </Button>
-              <Button variant="light" color="teal" radius="md" type="button">
+              <Button
+                variant={filter === TodoFilters.DONE ? "filled" : "light"}
+                color={filter === TodoFilters.DONE ? "teal" : "gray"}
+                radius="md"
+                type="button"
+                onClick={() => {
+                  setFilter(TodoFilters.DONE);
+                  setPage(1);
+                  setTodos([]);
+                }}
+              >
                 Done
               </Button>
-              <Button variant="light" color="gray" radius="md" type="button">
+              <Button
+                variant={filter === TodoFilters.UNDONE ? "filled" : "light"}
+                color={filter === TodoFilters.UNDONE ? "teal" : "gray"}
+                radius="md"
+                type="button"
+                onClick={() => {
+                  setFilter(TodoFilters.UNDONE);
+                  setPage(1);
+                  setTodos([]);
+                }}
+              >
                 Undone
               </Button>
             </Group>
@@ -144,18 +208,52 @@ export function HomePage() {
                   Sort
                 </Text>
                 <Button
-                  variant="default"
+                  variant={
+                    sortMethod === SortMethods.PRIORITY_ASC
+                      ? "filled"
+                      : "default"
+                  }
+                  color={
+                    sortMethod === SortMethods.PRIORITY_ASC ? "teal" : undefined
+                  }
                   radius="md"
                   type="button"
                   leftSection={<IconSortAscending size={16} />}
+                  onClick={() => {
+                    setSortMethod((current) =>
+                      current === SortMethods.PRIORITY_ASC
+                        ? null
+                        : SortMethods.PRIORITY_ASC,
+                    );
+                    setPage(1);
+                    setTodos([]);
+                  }}
                 >
                   Priority ↑
                 </Button>
                 <Button
-                  variant="default"
+                  variant={
+                    sortMethod === SortMethods.PRIORITY_DESC
+                      ? "filled"
+                      : "default"
+                  }
+                  color={
+                    sortMethod === SortMethods.PRIORITY_DESC
+                      ? "teal"
+                      : undefined
+                  }
                   radius="md"
                   type="button"
                   leftSection={<IconSortDescending size={16} />}
+                  onClick={() => {
+                    setSortMethod((current) =>
+                      current === SortMethods.PRIORITY_DESC
+                        ? null
+                        : SortMethods.PRIORITY_DESC,
+                    );
+                    setPage(1);
+                    setTodos([]);
+                  }}
                 >
                   Priority ↓
                 </Button>

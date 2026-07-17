@@ -1,10 +1,13 @@
-import type { TodosResponse } from '../types/todo';
+import type { SortMethod, TodoFilter, TodosResponse } from '../types/todo';
 
 const BASE_API_URL = import.meta.env.VITE_BASE_API_URL;
 
 export type FetchTodosParams = {
   page?: number;
   limit?: number;
+  search?: string;
+  filter?: TodoFilter;
+  sortMethod?: SortMethod;
 };
 
 export async function fetchTodos(
@@ -17,6 +20,15 @@ export async function fetchTodos(
   }
   if (params.limit != null) {
     url.searchParams.set('limit', String(params.limit));
+  }
+  if (params.search) {
+    url.searchParams.set('search', params.search);
+  }
+  if (params.filter) {
+    url.searchParams.set('filter', params.filter);
+  }
+  if (params.sortMethod) {
+    url.searchParams.set('sortMethod', params.sortMethod);
   }
 
   const response = await fetch(url);
