@@ -320,6 +320,56 @@ export function HomePage() {
                 >
                   Priority ↓
                 </Button>
+                <Button
+                  variant={
+                    sortMethod === SortMethods.DUE_DATE_ASC
+                      ? "filled"
+                      : "default"
+                  }
+                  color={
+                    sortMethod === SortMethods.DUE_DATE_ASC ? "teal" : undefined
+                  }
+                  radius="md"
+                  type="button"
+                  leftSection={<IconSortAscending size={16} />}
+                  onClick={() => {
+                    setSortMethod((current) =>
+                      current === SortMethods.DUE_DATE_ASC
+                        ? null
+                        : SortMethods.DUE_DATE_ASC,
+                    );
+                    setPage(1);
+                    setTodos([]);
+                  }}
+                >
+                  Due ↑
+                </Button>
+                <Button
+                  variant={
+                    sortMethod === SortMethods.DUE_DATE_DESC
+                      ? "filled"
+                      : "default"
+                  }
+                  color={
+                    sortMethod === SortMethods.DUE_DATE_DESC
+                      ? "teal"
+                      : undefined
+                  }
+                  radius="md"
+                  type="button"
+                  leftSection={<IconSortDescending size={16} />}
+                  onClick={() => {
+                    setSortMethod((current) =>
+                      current === SortMethods.DUE_DATE_DESC
+                        ? null
+                        : SortMethods.DUE_DATE_DESC,
+                    );
+                    setPage(1);
+                    setTodos([]);
+                  }}
+                >
+                  Due ↓
+                </Button>
               </Group>
 
               <Button

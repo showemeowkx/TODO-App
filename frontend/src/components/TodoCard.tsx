@@ -17,6 +17,12 @@ function formatDate(value: string): string {
   }).format(new Date(value));
 }
 
+function formatDueDate(value: string): string {
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: "medium",
+  }).format(new Date(value));
+}
+
 export function TodoCard({
   todo,
   onDelete,
@@ -64,7 +70,12 @@ export function TodoCard({
               {todo.title}
             </Text>
             <Text size="xs" c="dimmed">
-              {formatDate(todo.createdAt)}
+              Created {formatDate(todo.createdAt)}
+            </Text>
+            <Text size="xs" c={todo.dueDate ? "teal.7" : "dimmed"}>
+              {todo.dueDate
+                ? `Due ${formatDueDate(todo.dueDate)}`
+                : "No due date"}
             </Text>
           </Stack>
         </Group>
