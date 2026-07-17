@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 import {
+  IsDateString,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -20,4 +21,8 @@ export class CreateTodoDto {
   @Min(1)
   @Max(10)
   priority: number;
+
+  @IsOptional()
+  @IsDateString()
+  dueDate?: string;
 }
