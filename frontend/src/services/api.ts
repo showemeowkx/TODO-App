@@ -39,3 +39,13 @@ export async function fetchTodos(
 
   return response.json() as Promise<TodosResponse>;
 }
+
+export async function deleteTodo(id: number): Promise<void> {
+  const response = await fetch(`${BASE_API_URL}/todo/${id}`, {
+    method: 'DELETE',
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to delete todo (${response.status})`);
+  }
+}

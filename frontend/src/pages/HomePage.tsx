@@ -16,7 +16,7 @@ import {
   IconSortAscending,
   IconSortDescending,
 } from "@tabler/icons-react";
-import { fetchTodos } from "../services/api";
+import { deleteTodo, fetchTodos } from "../services/api";
 import { TodoCard } from "../components/TodoCard";
 import {
   SortMethods,
@@ -41,6 +41,7 @@ export function HomePage() {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [filter, setFilter] = useState<TodoFilter | null>(null);
   const [sortMethod, setSortMethod] = useState<SortMethod | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const loadingRef = useRef(false);
@@ -129,6 +130,21 @@ export function HomePage() {
     observer.observe(sentinel);
     return () => observer.disconnect();
   }, [hasMore, error]);
+
+  async function handleDelete(id: number) {
+    setDeletingId(id);
+    setError(null);
+
+    try {
+      await deleteTodo(id);
+      setTodos((prev) => prev.filter((todo) => todo.id !== id));
+      setTotal((prev) => Math.max(0, prev - 1));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to delete todo");
+    } finally {
+      setDeletingId(null);
+    }
+  }
 
   return (
     <div className="app-shell">
@@ -302,7 +318,14 @@ export function HomePage() {
 
             {!initialLoading &&
               !error &&
-              todos.map((todo) => <TodoCard key={todo.id} todo={todo} />)}
+              todos.map((todo) => (
+                <TodoCard
+                  key={todo.id}
+                  todo={todo}
+                  deleting={deletingId === todo.id}
+                  onDelete={handleDelete}
+                />
+              ))}
 
             <div ref={sentinelRef} aria-hidden style={{ height: 1 }} />
 

@@ -4,6 +4,8 @@ import type { Todo } from "../types/todo";
 
 type TodoCardProps = {
   todo: Todo;
+  onDelete: (id: number) => void;
+  deleting?: boolean;
 };
 
 function formatDate(value: string): string {
@@ -13,7 +15,7 @@ function formatDate(value: string): string {
   }).format(new Date(value));
 }
 
-export function TodoCard({ todo }: TodoCardProps) {
+export function TodoCard({ todo, onDelete, deleting = false }: TodoCardProps) {
   return (
     <Card
       padding="lg"
@@ -64,6 +66,9 @@ export function TodoCard({ todo }: TodoCardProps) {
             radius="md"
             type="button"
             aria-label="Delete todo"
+            loading={deleting}
+            disabled={deleting}
+            onClick={() => onDelete(todo.id)}
           >
             <IconTrash size={16} />
           </ActionIcon>
