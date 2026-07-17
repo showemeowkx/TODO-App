@@ -16,7 +16,7 @@ import {
   IconSortAscending,
   IconSortDescending,
 } from "@tabler/icons-react";
-import { createTodo, deleteTodo, fetchTodos } from "../services/api";
+import { createTodo, deleteTodo, fetchTodos, toggleTodo } from "../services/api";
 import { TodoCard } from "../components/TodoCard";
 import { CreateTodoModal } from "../components/CreateTodoModal";
 import {
@@ -44,6 +44,7 @@ export function HomePage() {
   const [filter, setFilter] = useState<TodoFilter | null>(null);
   const [sortMethod, setSortMethod] = useState<SortMethod | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [togglingId, setTogglingId] = useState<number | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
 
@@ -147,6 +148,41 @@ export function HomePage() {
       setError(err instanceof Error ? err.message : "Failed to delete todo");
     } finally {
       setDeletingId(null);
+    }
+  }
+
+  async function handleToggle(id: number) {
+    setTogglingId(id);
+    setError(null);
+
+    try {
+      await toggleTodo(id);
+      setTodos((prev) =>
+        prev.flatMap((todo) => {
+          if (todo.id !== id) return [todo];
+
+          const next = { ...todo, isDone: !todo.isDone };
+
+          if (filter === TodoFilters.DONE && !next.isDone) {
+            return [];
+          }
+          if (filter === TodoFilters.UNDONE && next.isDone) {
+            return [];
+          }
+
+          return [next];
+        }),
+      );
+      if (
+        filter === TodoFilters.DONE ||
+        filter === TodoFilters.UNDONE
+      ) {
+        setTotal((prev) => Math.max(0, prev - 1));
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to toggle todo");
+    } finally {
+      setTogglingId(null);
     }
   }
 
@@ -341,7 +377,9 @@ export function HomePage() {
                   key={todo.id}
                   todo={todo}
                   deleting={deletingId === todo.id}
+                  toggling={togglingId === todo.id}
                   onDelete={handleDelete}
+                  onToggle={handleToggle}
                 />
               ))}
 

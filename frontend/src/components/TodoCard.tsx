@@ -1,11 +1,13 @@
-import { ActionIcon, Badge, Card, Group, Stack, Text } from "@mantine/core";
+import { ActionIcon, Badge, Card, Group, Stack, Text, UnstyledButton } from "@mantine/core";
 import { IconCircleCheck, IconCircle, IconTrash } from "@tabler/icons-react";
 import type { Todo } from "../types/todo";
 
 type TodoCardProps = {
   todo: Todo;
   onDelete: (id: number) => void;
+  onToggle: (id: number) => void;
   deleting?: boolean;
+  toggling?: boolean;
 };
 
 function formatDate(value: string): string {
@@ -15,7 +17,13 @@ function formatDate(value: string): string {
   }).format(new Date(value));
 }
 
-export function TodoCard({ todo, onDelete, deleting = false }: TodoCardProps) {
+export function TodoCard({
+  todo,
+  onDelete,
+  onToggle,
+  deleting = false,
+  toggling = false,
+}: TodoCardProps) {
   return (
     <Card
       padding="lg"
@@ -29,11 +37,22 @@ export function TodoCard({ todo, onDelete, deleting = false }: TodoCardProps) {
     >
       <Group justify="space-between" align="flex-start" wrap="nowrap" gap="md">
         <Group align="flex-start" gap="sm" wrap="nowrap" style={{ flex: 1 }}>
-          {todo.isDone ? (
-            <IconCircleCheck size={22} color="#2a9d8f" aria-hidden />
-          ) : (
-            <IconCircle size={22} color="#8aa099" aria-hidden />
-          )}
+          <UnstyledButton
+            onClick={() => onToggle(todo.id)}
+            disabled={toggling || deleting}
+            aria-label={todo.isDone ? "Mark as undone" : "Mark as done"}
+            style={{
+              display: "flex",
+              marginTop: 2,
+              opacity: toggling ? 0.6 : 1,
+            }}
+          >
+            {todo.isDone ? (
+              <IconCircleCheck size={22} color="#2a9d8f" aria-hidden />
+            ) : (
+              <IconCircle size={22} color="#8aa099" aria-hidden />
+            )}
+          </UnstyledButton>
           <Stack gap={4} style={{ flex: 1, minWidth: 0 }}>
             <Text
               fw={600}
@@ -67,7 +86,7 @@ export function TodoCard({ todo, onDelete, deleting = false }: TodoCardProps) {
             type="button"
             aria-label="Delete todo"
             loading={deleting}
-            disabled={deleting}
+            disabled={deleting || toggling}
             onClick={() => onDelete(todo.id)}
           >
             <IconTrash size={16} />

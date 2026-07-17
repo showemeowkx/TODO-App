@@ -59,6 +59,16 @@ export async function createTodo(payload: CreateTodoDto): Promise<void> {
   }
 }
 
+export async function toggleTodo(id: number): Promise<void> {
+  const response = await fetch(`${BASE_API_URL}/todo/${id}`, {
+    method: 'PATCH',
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to toggle todo (${response.status})`);
+  }
+}
+
 export async function deleteTodo(id: number): Promise<void> {
   const response = await fetch(`${BASE_API_URL}/todo/${id}`, {
     method: 'DELETE',
