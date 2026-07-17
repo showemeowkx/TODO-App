@@ -16,11 +16,13 @@ import {
   IconSortAscending,
   IconSortDescending,
 } from "@tabler/icons-react";
-import { deleteTodo, fetchTodos } from "../services/api";
+import { createTodo, deleteTodo, fetchTodos } from "../services/api";
 import { TodoCard } from "../components/TodoCard";
+import { CreateTodoModal } from "../components/CreateTodoModal";
 import {
   SortMethods,
   TodoFilters,
+  type CreateTodoDto,
   type SortMethod,
   type Todo,
   type TodoFilter,
@@ -42,6 +44,8 @@ export function HomePage() {
   const [filter, setFilter] = useState<TodoFilter | null>(null);
   const [sortMethod, setSortMethod] = useState<SortMethod | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
 
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const loadingRef = useRef(false);
@@ -112,7 +116,7 @@ export function HomePage() {
     return () => {
       cancelled = true;
     };
-  }, [page, debouncedSearch, filter, sortMethod]);
+  }, [page, debouncedSearch, filter, sortMethod, reloadKey]);
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
@@ -144,6 +148,13 @@ export function HomePage() {
     } finally {
       setDeletingId(null);
     }
+  }
+
+  async function handleCreate(payload: CreateTodoDto) {
+    await createTodo(payload);
+    setPage(1);
+    setTodos([]);
+    setReloadKey((key) => key + 1);
   }
 
   return (
@@ -280,11 +291,18 @@ export function HomePage() {
                 radius="md"
                 type="button"
                 leftSection={<IconPlus size={18} />}
+                onClick={() => setCreateOpen(true)}
               >
                 New todo
               </Button>
             </Group>
           </Stack>
+
+          <CreateTodoModal
+            opened={createOpen}
+            onClose={() => setCreateOpen(false)}
+            onSubmit={handleCreate}
+          />
 
           <Stack gap="sm">
             <Group justify="space-between">

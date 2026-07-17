@@ -1,4 +1,9 @@
-import type { SortMethod, TodoFilter, TodosResponse } from '../types/todo';
+import type {
+  CreateTodoDto,
+  SortMethod,
+  TodoFilter,
+  TodosResponse,
+} from '../types/todo';
 
 const BASE_API_URL = import.meta.env.VITE_BASE_API_URL;
 
@@ -38,6 +43,20 @@ export async function fetchTodos(
   }
 
   return response.json() as Promise<TodosResponse>;
+}
+
+export async function createTodo(payload: CreateTodoDto): Promise<void> {
+  const response = await fetch(`${BASE_API_URL}/todo`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to create todo (${response.status})`);
+  }
 }
 
 export async function deleteTodo(id: number): Promise<void> {
