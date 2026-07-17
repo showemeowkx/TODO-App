@@ -46,12 +46,24 @@ export async function fetchTodos(
 }
 
 export async function createTodo(payload: CreateTodoDto): Promise<void> {
+  const body: CreateTodoDto = {
+    title: payload.title,
+  };
+
+  if (payload.priority != null) {
+    body.priority = payload.priority;
+  }
+
+  if (payload.dueDate) {
+    body.dueDate = payload.dueDate;
+  }
+
   const response = await fetch(`${BASE_API_URL}/todo`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(payload),
+    body: JSON.stringify(body),
   });
 
   if (!response.ok) {
