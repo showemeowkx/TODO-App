@@ -15,7 +15,7 @@ FROM node:22-alpine AS run
 WORKDIR /app
 
 ENV NODE_ENV=production
-ENV PORT=3000
+ENV BACKEND_PORT=3000
 
 COPY package.json package-lock.json ./
 RUN npm install --omit=dev
