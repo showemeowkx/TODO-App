@@ -6,18 +6,23 @@ import {
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import { TodoService } from './todo.service';
 import { Todo } from './entities/todo.entity';
 import { CreateTodoDto } from './dto/create-todo.dto';
+import { GetTodosDto } from './dto/get-todos.dto';
 
 @Controller('todo')
 export class TodoController {
   constructor(private readonly todoService: TodoService) {}
 
   @Get()
-  findAll(): Promise<Todo[]> {
-    return this.todoService.findAll();
+  findAll(@Query() getTodosDto: GetTodosDto): Promise<{
+    data: Todo[];
+    metadata: { page: number; limit: number; total: number };
+  }> {
+    return this.todoService.findAll(getTodosDto);
   }
 
   @Post()

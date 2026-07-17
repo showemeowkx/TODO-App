@@ -3,6 +3,9 @@ import { Todo } from './entities/todo.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateTodoDto } from './dto/create-todo.dto';
+import { GetTodosDto } from './dto/get-todos.dto';
+import { TodoFilters } from 'src/enums/todoFilters.enuim';
+import { SortMethods } from 'src/enums/sortMethods.enum';
 
 @Injectable()
 export class TodoService {
@@ -16,11 +19,58 @@ export class TodoService {
   async create(createTodoDto: CreateTodoDto): Promise<void> {
     const todo = this.todoRepository.create(createTodoDto);
     await this.todoRepository.save(todo);
+
     this.logger.log(`Todo created: ${todo.id}`);
   }
 
-  async findAll(): Promise<Todo[]> {
-    return this.todoRepository.find();
+  async findAll(getTodosDto: GetTodosDto): Promise<{
+    data: Todo[];
+    metadata: { page: number; limit: number; total: number };
+  }> {
+    const qb = this.todoRepository.createQueryBuilder('todo');
+
+    if (getTodosDto.search) {
+      qb.andWhere('todo.title LIKE :search', {
+        search: `%${getTodosDto.search}%`,
+      });
+    }
+
+    if (getTodosDto.filter) {
+      qb.andWhere('todo.isDone = :isDone', {
+        isDone: getTodosDto.filter === TodoFilters.DONE,
+      });
+    }
+
+    if (getTodosDto.sortMethod) {
+      switch (getTodosDto.sortMethod) {
+        case SortMethods.PRIORITY_ASC:
+          qb.orderBy('todo.priority', 'ASC');
+          break;
+        case SortMethods.PRIORITY_DESC:
+          qb.orderBy('todo.priority', 'DESC');
+          break;
+      }
+    } else {
+      qb.orderBy('todo.createdAt', 'DESC');
+    }
+
+    let page = 1;
+    let limit = 10;
+
+    if (getTodosDto.page) {
+      page = getTodosDto.page;
+    }
+
+    if (getTodosDto.limit) {
+      limit = getTodosDto.limit;
+    }
+
+    qb.skip((page - 1) * limit);
+    qb.take(limit);
+
+    const [todos, total] = await qb.getManyAndCount();
+
+    return { data: todos, metadata: { page, limit, total } };
   }
 
   async findOne(id: number): Promise<Todo> {
