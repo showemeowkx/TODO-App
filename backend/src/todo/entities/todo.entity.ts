@@ -13,7 +13,7 @@ export class Todo {
   @Column()
   title: string;
 
-  @Column()
+  @Column({ default: false })
   isDone: boolean;
 
   @Column({ default: 1 })
