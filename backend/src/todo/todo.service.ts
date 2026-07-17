@@ -4,8 +4,8 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateTodoDto } from './dto/create-todo.dto';
 import { GetTodosDto } from './dto/get-todos.dto';
-import { TodoFilters } from 'src/enums/todoFilters.enuim';
-import { SortMethods } from 'src/enums/sortMethods.enum';
+import { TodoFilters } from 'src/todo/enums/todoFilters.enuim';
+import { SortMethods } from 'src/todo/enums/sortMethods.enum';
 
 @Injectable()
 export class TodoService {
@@ -54,6 +54,12 @@ export class TodoService {
           break;
         case SortMethods.PRIORITY_DESC:
           qb.orderBy('todo.priority', 'DESC');
+          break;
+        case SortMethods.DUE_DATE_ASC:
+          qb.orderBy('todo.dueDate', 'ASC', 'NULLS LAST');
+          break;
+        case SortMethods.DUE_DATE_DESC:
+          qb.orderBy('todo.dueDate', 'DESC', 'NULLS LAST');
           break;
       }
     } else {
