@@ -3,6 +3,11 @@ FROM node:22-alpine AS build
 
 WORKDIR /app
 
+ARG VITE_BASE_API_URL=http://localhost:3000
+ARG VITE_FRONTEND_PORT=5173
+ENV VITE_BASE_API_URL=$VITE_BASE_API_URL
+ENV VITE_FRONTEND_PORT=$VITE_FRONTEND_PORT
+
 COPY package.json package-lock.json ./
 RUN npm install
 
