@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Alert,
   Button,
@@ -20,38 +20,83 @@ import { fetchTodos } from "../services/api";
 import { TodoCard } from "../components/TodoCard";
 import type { Todo } from "../types/todo";
 
+const PAGE_LIMIT = 10;
+
 export function HomePage() {
   const [todos, setTodos] = useState<Todo[]>([]);
+  const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const loadingRef = useRef(false);
+
+  const hasMore = todos.length < total;
 
   useEffect(() => {
     let cancelled = false;
 
-    async function load() {
-      setLoading(true);
+    async function loadPage() {
+      loadingRef.current = true;
       setError(null);
 
+      if (page === 1) {
+        setInitialLoading(true);
+      } else {
+        setLoadingMore(true);
+      }
+
       try {
-        const response = await fetchTodos();
+        const response = await fetchTodos({ page, limit: PAGE_LIMIT });
         if (cancelled) return;
-        setTodos(response.data);
+
         setTotal(response.metadata.total);
+        setTodos((prev) => {
+          if (page === 1) return response.data;
+
+          const existingIds = new Set(prev.map((todo) => todo.id));
+          const next = response.data.filter(
+            (todo) => !existingIds.has(todo.id),
+          );
+          return [...prev, ...next];
+        });
       } catch (err) {
         if (cancelled) return;
         setError(err instanceof Error ? err.message : "Failed to load todos");
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setInitialLoading(false);
+          setLoadingMore(false);
+          loadingRef.current = false;
+        }
       }
     }
 
-    void load();
+    void loadPage();
 
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [page]);
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries[0]?.isIntersecting;
+        if (!visible || !hasMore || loadingRef.current || error) return;
+        setPage((current) => current + 1);
+      },
+      { root: null, rootMargin: "240px", threshold: 0 },
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasMore, error]);
 
   return (
     <div className="app-shell">
@@ -132,14 +177,14 @@ export function HomePage() {
               <Text fw={600} size="sm">
                 Your tasks
               </Text>
-              {!loading && !error && (
+              {!initialLoading && !error && (
                 <Text size="sm" c="dimmed">
                   {total} total
                 </Text>
               )}
             </Group>
 
-            {loading && (
+            {initialLoading && (
               <Group justify="center" py="xl">
                 <Loader color="teal" />
               </Group>
@@ -151,15 +196,29 @@ export function HomePage() {
               </Alert>
             )}
 
-            {!loading && !error && todos.length === 0 && (
+            {!initialLoading && !error && todos.length === 0 && (
               <Alert color="gray" title="No tasks yet" radius="md">
                 Create your first todo to get started.
               </Alert>
             )}
 
-            {!loading &&
+            {!initialLoading &&
               !error &&
               todos.map((todo) => <TodoCard key={todo.id} todo={todo} />)}
+
+            <div ref={sentinelRef} aria-hidden style={{ height: 1 }} />
+
+            {loadingMore && (
+              <Group justify="center" py="md">
+                <Loader color="teal" size="sm" />
+              </Group>
+            )}
+
+            {!initialLoading && !error && !hasMore && todos.length > 0 && (
+              <Text size="sm" c="dimmed" ta="center" py="sm">
+                No more tasks here ;)
+              </Text>
+            )}
           </Stack>
         </Stack>
       </Container>
