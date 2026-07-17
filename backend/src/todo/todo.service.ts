@@ -17,7 +17,13 @@ export class TodoService {
   ) {}
 
   async create(createTodoDto: CreateTodoDto): Promise<void> {
-    const todo = this.todoRepository.create(createTodoDto);
+    const todo = this.todoRepository.create({
+      title: createTodoDto.title,
+      priority: createTodoDto.priority,
+      dueDate: createTodoDto.dueDate
+        ? new Date(createTodoDto.dueDate)
+        : undefined,
+    });
     await this.todoRepository.save(todo);
 
     this.logger.log(`Todo created: ${todo.id}`);
@@ -30,7 +36,7 @@ export class TodoService {
     const qb = this.todoRepository.createQueryBuilder('todo');
 
     if (getTodosDto.search) {
-      qb.andWhere('todo.title LIKE :search', {
+      qb.andWhere('LOWER(todo.title) LIKE LOWER(:search)', {
         search: `%${getTodosDto.search}%`,
       });
     }

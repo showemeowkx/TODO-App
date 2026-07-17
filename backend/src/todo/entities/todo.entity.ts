@@ -19,6 +19,9 @@ export class Todo {
   @Column({ default: 1 })
   priority: number;
 
+  @Column({ nullable: true })
+  dueDate: Date;
+
   @CreateDateColumn()
   createdAt: Date;
 }
