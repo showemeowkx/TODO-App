@@ -5,7 +5,7 @@ import { validate } from 'class-validator';
 import { CreateTodoDto } from './create-todo.dto';
 import { GetTodosDto } from './get-todos.dto';
 import { SortMethods } from '../enums/sortMethods.enum';
-import { TodoFilters } from '../enums/todoFilters.enuim';
+import { TodoFilters } from '../enums/todoFilters.enum';
 
 describe('CreateTodoDto validation', () => {
   async function validateDto(plain: Record<string, unknown>) {

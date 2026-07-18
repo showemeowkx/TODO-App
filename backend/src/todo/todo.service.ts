@@ -4,8 +4,8 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateTodoDto } from './dto/create-todo.dto';
 import { GetTodosDto } from './dto/get-todos.dto';
-import { TodoFilters } from 'src/todo/enums/todoFilters.enuim';
-import { SortMethods } from 'src/todo/enums/sortMethods.enum';
+import { TodoFilters } from './enums/todoFilters.enum';
+import { SortMethods } from './enums/sortMethods.enum';
 
 @Injectable()
 export class TodoService {

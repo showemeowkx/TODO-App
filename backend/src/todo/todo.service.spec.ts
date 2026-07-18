@@ -5,7 +5,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { TodoService } from './todo.service';
 import { Todo } from './entities/todo.entity';
 import { SortMethods } from './enums/sortMethods.enum';
-import { TodoFilters } from './enums/todoFilters.enuim';
+import { TodoFilters } from './enums/todoFilters.enum';
 
 describe('TodoService', () => {
   let service: TodoService;

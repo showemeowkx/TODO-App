@@ -1,7 +1,6 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 import { IsEnum, IsNumber, IsOptional, IsString, Min } from 'class-validator';
 import { SortMethods } from '../enums/sortMethods.enum';
-import { TodoFilters } from '../enums/todoFilters.enuim';
+import { TodoFilters } from '../enums/todoFilters.enum';
 import { Type } from 'class-transformer';
 
 export class GetTodosDto {

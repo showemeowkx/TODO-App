@@ -4,7 +4,7 @@ import { NotFoundException } from '@nestjs/common';
 import { TodoController } from './todo.controller';
 import { TodoService } from './todo.service';
 import { SortMethods } from './enums/sortMethods.enum';
-import { TodoFilters } from './enums/todoFilters.enuim';
+import { TodoFilters } from './enums/todoFilters.enum';
 import { Todo } from './entities/todo.entity';
 
 describe('TodoController', () => {
