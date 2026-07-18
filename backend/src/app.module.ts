@@ -8,7 +8,6 @@ import { TodoModule } from './todo/todo.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      // Local: programme/.env or backend/.env — hosting uses process.env
       envFilePath: [
         join(process.cwd(), '.env.local'),
         join(process.cwd(), '.env'),
